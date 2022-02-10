@@ -1,15 +1,13 @@
 import { StyleSheet } from 'react-native';
+import { Text, View } from '../../components/Themed';
 
-import EditScreenInfo from '../components/EditScreenInfo';
-import { Text, View } from '../components/Themed';
-import { RootTabScreenProps } from '../navigation/BottomTabNavigator';
 
-export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
+export default function ShoppingListScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Best Sellers</Text>
+      <Text style={styles.title}>Shopping List</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      {/* <EditScreenInfo path="/screens/TabOneScreen.tsx" /> */}
+      {/* <EditScreenInfo path="/screens/TabTwoScreen.tsx" /> */}
     </View>
   );
 }

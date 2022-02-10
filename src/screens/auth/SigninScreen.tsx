@@ -1,6 +1,6 @@
-import { useNavigation } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import HorizontalDivider from '../../components/HorizontalDivider';
 import { Text, View } from '../../components/Themed';
@@ -9,20 +9,44 @@ import { AuthStackNavigationProps } from '../../navigation/AuthNavigator';
 import { MaterialIcons } from '@expo/vector-icons';
 import SubmitButton from '../../components/SubmitButton';
 import HorMarginView from '../../components/HorMarginView';
+import { isEmailValid } from '../../utils/strings';
+import { RootStackNavigationProps } from '../../navigation/RootNavigator';
+import { useAppUIContext } from '../../context/AppUIContext';
+import auth from '@react-native-firebase/auth'
 
-export default function SigninScreen(/*{ navigation }: AuthStackNavigationProps*/) {
+export default function SigninScreen() {
 
-  const navigation = useNavigation<AuthStackNavigationProps>()
+  const navigation = useNavigation<CompositeNavigationProp<AuthStackNavigationProps, RootStackNavigationProps>>()
   const [emailAddress, setEmailAddress] = useState('')
+  
   const [password, setPassword] = useState('')
+  const refPasswordInput = useRef<TextInput>(null)
+
+  const loginButtonAvailable = useMemo(() => {
+    return isEmailValid(emailAddress) && password.length > 5
+  }, [emailAddress, password])
+
+  const { showLoadingIndicator } = useAppUIContext()
 
   const onSignup = () => {
     navigation.navigate('Signup')
   }
 
-  useEffect(() => {
-    
-  }, [])
+  const onLogin = () => {
+    showLoadingIndicator(true)
+    auth().signInWithEmailAndPassword(emailAddress, password)
+      .then(() => {
+        showLoadingIndicator(false)
+        navigation.push('Root')
+      })
+      .catch(err => {
+        showLoadingIndicator(false)
+        Alert.alert('Sign in failed', undefined, [{
+          text: "Ok",
+          style: "cancel"
+        }])
+      })
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -42,6 +66,7 @@ export default function SigninScreen(/*{ navigation }: AuthStackNavigationProps*
               value={emailAddress}
               returnKeyType='next'
               onChangeText={setEmailAddress}
+              onSubmitEditing={() => refPasswordInput.current?.focus()}
             />
             <MaterialIcons name="email" size={24} color='#adadad' style={styles.textInputIcon} />
           </View>
@@ -49,7 +74,8 @@ export default function SigninScreen(/*{ navigation }: AuthStackNavigationProps*
           <VerMarginView size={10} />
           <View>
             <TextInput 
-              placeholder='Password'
+              ref={refPasswordInput}
+              placeholder='Password (6 or more characters)'
               style={styles.textInput}
               value={password}
               returnKeyType='done'
@@ -61,7 +87,8 @@ export default function SigninScreen(/*{ navigation }: AuthStackNavigationProps*
           <HorizontalDivider />
           <VerMarginView size={30} />
           <SubmitButton 
-            onPress={() => {}}
+            onPress={onLogin}
+            disabled={!loginButtonAvailable}
             text="Log in"
           />
           <VerMarginView size={50} />

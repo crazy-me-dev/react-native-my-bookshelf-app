@@ -1,21 +1,64 @@
 import { useNavigation } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Keyboard, Image, KeyboardAvoidingView, Platform, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import HorizontalDivider from '../../components/HorizontalDivider';
 import { Text, View } from '../../components/Themed';
 import VerMarginView from '../../components/VerMarginView';
-import { AuthStackNavigationProps } from '../../navigation/AuthNavigator';
 import { MaterialIcons } from '@expo/vector-icons';
 import SubmitButton from '../../components/SubmitButton';
 import HorMarginView from '../../components/HorMarginView';
+import { isEmailValid } from '../../utils/strings';
+import { useAppUIContext } from '../../context/AppUIContext';
+import auth from '@react-native-firebase/auth';
+import { userDoc } from '../../service/firebase/firebaseQueries';
+import { RootStackNavigationProps } from '../../navigation/RootNavigator';
 
 export default function SigninScreen(/*{ navigation }: AuthStackNavigationProps*/) {
 
-  const navigation = useNavigation<AuthStackNavigationProps>()
+  const navigation = useNavigation<RootStackNavigationProps>()
   const [emailAddress, setEmailAddress] = useState('')
   const [password, setPassword] = useState('')
+  const refPasswordInput = useRef<TextInput>(null)
+
   const [confirmPassword, setConfirmPassword] = useState('')
+  const refConfirmPasswordInput = useRef<TextInput>(null)
+  
+  const { showLoadingIndicator } = useAppUIContext()
+
+  const signUpAvailable = useMemo(() => {
+    return isEmailValid(emailAddress) && password.length > 5 && password === confirmPassword
+  }, [emailAddress, password, confirmPassword])
+
+  const onSignup = () => {
+    showLoadingIndicator(true)
+    auth().createUserWithEmailAndPassword(emailAddress, password)
+      .then(userCredential => {
+        showLoadingIndicator(false)
+        const createdUserId = userCredential.user?.uid
+        if (createdUserId) {
+          userDoc(createdUserId).set({
+            uid: createdUserId,
+            created: new Date().getTime(),
+            role: 'admin',
+            createdBy: 'admin-web'
+          })
+          navigation.push('Root')
+        } else {
+          Alert.alert('Sign up failed', undefined, [{
+            text: "Ok",
+            style: "cancel"
+          }])
+        }
+      })
+      .catch(err => {
+        showLoadingIndicator(false)
+        Alert.alert('Sign up failed', err.message, [{
+          text: "Ok",
+          style: "cancel"
+        }])
+      })
+  }
 
   const onSignin = () => {
     navigation.navigate('Signin')
@@ -43,6 +86,7 @@ export default function SigninScreen(/*{ navigation }: AuthStackNavigationProps*
               value={emailAddress}
               returnKeyType='next'
               onChangeText={setEmailAddress}
+              onSubmitEditing={() => refPasswordInput.current?.focus()}
             />
             <MaterialIcons name="email" size={24} color='#adadad' style={styles.textInputIcon} />
           </View>
@@ -50,11 +94,15 @@ export default function SigninScreen(/*{ navigation }: AuthStackNavigationProps*
           <VerMarginView size={10} />
           <View>
             <TextInput 
-              placeholder='Password'
+              ref={refPasswordInput}
+              placeholder='Password (6 or more characters)'
               style={styles.textInput}
               value={password}
-              returnKeyType='done'
+              textContentType='oneTimeCode'
+              returnKeyType='next'
+              blurOnSubmit={false}
               onChangeText={setPassword}
+              onSubmitEditing={() => refConfirmPasswordInput.current?.focus()}
               secureTextEntry
             />
             <MaterialIcons name="lock" size={24} color='#adadad' style={styles.textInputIcon} />
@@ -63,19 +111,24 @@ export default function SigninScreen(/*{ navigation }: AuthStackNavigationProps*
           <VerMarginView size={10} />
           <View>
             <TextInput 
+              ref={refConfirmPasswordInput}
               placeholder='Confirm password'
               style={styles.textInput}
+              textContentType='oneTimeCode'
               value={confirmPassword}
+              blurOnSubmit={false}
               returnKeyType='done'
               onChangeText={setConfirmPassword}
               secureTextEntry
+              onSubmitEditing={() => Keyboard.dismiss()}
             />
             <MaterialIcons name="lock" size={24} color='#adadad' style={styles.textInputIcon} />
           </View>
           <HorizontalDivider />
           <VerMarginView size={30} />
           <SubmitButton 
-            onPress={() => {}}
+            disabled={!signUpAvailable}
+            onPress={onSignup}
             text="Sign up"
           />
           <VerMarginView size={50} />
