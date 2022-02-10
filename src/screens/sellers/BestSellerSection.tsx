@@ -33,6 +33,7 @@ export default function BestSellerSection({
         data={list}
         showsHorizontalScrollIndicator={false}
         renderItem={({item, index}) => <BookCell book={item} index={index} />}
+        keyExtractor={item => item.book_uri}
         />
     </View>
   )

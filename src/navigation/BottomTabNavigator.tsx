@@ -5,6 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Pressable } from 'react-native';
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
+import ProfileScreen from '../screens/profile/ProfileScreen';
 import BestSellersScreen from '../screens/sellers/BestSellersScreen';
 import TabOneScreen from '../screens/sellers/BestSellersScreen';
 import ShoppingListScreen from '../screens/shopping/ShoppingListScreen';
@@ -51,7 +52,7 @@ export function BottomTabNavigator() {
       />
       <BottomTab.Screen
         name="Profile"
-        component={ShoppingListScreen}
+        component={ProfileScreen}
         options={{
           title: 'Profile',
           tabBarIcon: ({ color }) => <FontAwesome name="user" size={24} color={color} />,

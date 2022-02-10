@@ -14,4 +14,6 @@ export type BestSeller = {
     amazon_product_url: string,
     price: number,
     primary_isbn10: string,
+    author: string,
+    book_uri: string,
 }

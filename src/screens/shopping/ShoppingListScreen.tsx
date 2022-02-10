@@ -1,13 +1,29 @@
-import { StyleSheet } from 'react-native';
-import { Text, View } from '../../components/Themed';
-
+import { FlatList, StyleSheet } from 'react-native'
+import { Text, View } from '../../components/Themed'
+import { useSelector } from 'react-redux'
+import { GlobalState } from '../../redux/store';
+import ShoppingCell from './ShoppingCell';
 
 export default function ShoppingListScreen() {
+
+  const shopping = useSelector((state: GlobalState) => state.shopping.shoppingList)
+
+  const renderEmptyContent = () => (
+    <View style={styles.emptyContentContainer}>
+      <Text style={styles.emptyText}>
+        There is no book in your cart.  Please add book to cart.
+      </Text>
+    </View>
+  )
+  
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Shopping List</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      {/* <EditScreenInfo path="/screens/TabTwoScreen.tsx" /> */}
+      <FlatList 
+        data={shopping}
+        renderItem={({ item }) => <ShoppingCell book={item} /> }
+        keyExtractor={item => item.book_uri}
+        ListEmptyComponent={renderEmptyContent}
+      />
     </View>
   );
 }
@@ -15,16 +31,18 @@ export default function ShoppingListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  emptyContentContainer: {
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'white',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
+  emptyText: {
+    backgroundColor: 'transparent',
+    marginTop: 60,
+    marginLeft: 20,
+    marginRight: 20,
+  }
 });

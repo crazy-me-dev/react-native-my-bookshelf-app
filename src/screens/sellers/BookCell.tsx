@@ -1,15 +1,30 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useMemo } from 'react';
 import { Image, Linking, StyleSheet, TouchableOpacity } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 import { Text, View } from '../../components/Themed';
-import { BestSeller, } from '../../model/BestSeller';
+import { BestSeller } from '../../model/BestSeller';
+import { storeBook } from '../../redux/actions';
+import { GlobalState } from '../../redux/store';
 
 export default function BookCell({
   book,
   index,
 }: {
   book: BestSeller,
-  index: number,
+  index?: number,
 }) {
+
+  const dispatch = useDispatch()
+  const shopping = useSelector((state: GlobalState) => state.shopping.shoppingList)
+  const alreadyAddedToShop = useMemo(() => {
+    if (shopping.some((shop: BestSeller) => shop.book_uri === book.book_uri)) {
+      return true
+    } else {
+      return false
+    }
+  }, [book, shopping])
+
   const openAmazonLink = () => {
     Linking.canOpenURL(book.amazon_product_url).then(supported => {
       if (supported) {
@@ -19,6 +34,11 @@ export default function BookCell({
       }
     })
   }
+
+  const addToShoppingList = () => {
+    dispatch(storeBook(book))
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.contentContainer}>
@@ -28,10 +48,10 @@ export default function BookCell({
             resizeMode='stretch'
             style={styles.image}
           />
-          <Text style={styles.textIndex}>{index + 1}</Text>
+          {index !== undefined && <Text style={styles.textIndex}>{index + 1}</Text>}
         </View>
         <Text style={styles.title}>{book.title}</Text>
-        <Text style={styles.author}>
+        <Text numberOfLines={1} ellipsizeMode='tail' style={styles.author}>
           by <Text style={{ fontWeight: 'bold'}}>{book.author}</Text>
         </Text>
         <Text numberOfLines={2} ellipsizeMode='tail'  style={styles.description}>
@@ -42,8 +62,8 @@ export default function BookCell({
           <TouchableOpacity onPress={openAmazonLink} style={styles.button}>
             <MaterialCommunityIcons name='share-outline' size={24}/>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button}>
-            <Ionicons name='cart-outline' size={24}/>
+          <TouchableOpacity disabled={alreadyAddedToShop} onPress={addToShoppingList} style={styles.button}>
+            {alreadyAddedToShop ? <Ionicons name='cart' color='#adadad' size={24}/> : <Ionicons name='cart-outline' size={24}/>}
           </TouchableOpacity>
         </View>
       </View>
