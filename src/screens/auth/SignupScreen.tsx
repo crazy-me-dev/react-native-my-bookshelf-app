@@ -14,7 +14,7 @@ import auth from '@react-native-firebase/auth';
 import { userDoc } from '../../service/firebase/firebaseQueries';
 import { RootStackNavigationProps } from '../../navigation/RootNavigator';
 
-export default function SigninScreen(/*{ navigation }: AuthStackNavigationProps*/) {
+export default function SigninScreen() {
 
   const navigation = useNavigation<RootStackNavigationProps>()
   const [emailAddress, setEmailAddress] = useState('')
@@ -40,8 +40,8 @@ export default function SigninScreen(/*{ navigation }: AuthStackNavigationProps*
           userDoc(createdUserId).set({
             uid: createdUserId,
             created: new Date().getTime(),
-            role: 'admin',
-            createdBy: 'admin-web'
+            email: emailAddress,
+            auth_by: 'email',
           })
           navigation.push('Root')
         } else {

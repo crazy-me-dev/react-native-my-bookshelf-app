@@ -39,9 +39,9 @@ export default function SigninScreen() {
         showLoadingIndicator(false)
         navigation.push('Root')
       })
-      .catch(err => {
+      .catch((err: any) => {
         showLoadingIndicator(false)
-        Alert.alert('Sign in failed', undefined, [{
+        Alert.alert('Sign in failed', err?.message ?? 'Credentials are invalid.', [{
           text: "Ok",
           style: "cancel"
         }])
