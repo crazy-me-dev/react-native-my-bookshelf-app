@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Keyboard, Image, KeyboardAvoidingView, Platform, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,10 +13,12 @@ import { useAppUIContext } from '../../context/AppUIContext';
 import auth from '@react-native-firebase/auth';
 import { userDoc } from '../../service/firebase/firebaseQueries';
 import { RootStackNavigationProps } from '../../navigation/RootNavigator';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { AuthStackNavigationProps } from '../../navigation/AuthNavigator';
 
 export default function SigninScreen() {
 
-  const navigation = useNavigation<RootStackNavigationProps>()
+  const navigation = useNavigation<CompositeNavigationProp<AuthStackNavigationProps, RootStackNavigationProps>>()
   const [emailAddress, setEmailAddress] = useState('')
   const [password, setPassword] = useState('')
   const refPasswordInput = useRef<TextInput>(null)
@@ -58,6 +60,37 @@ export default function SigninScreen() {
           style: "cancel"
         }])
       })
+  }
+
+  const onGoogleSign = async () => {
+
+    showLoadingIndicator(true)
+    try {
+      const { idToken, user } = await GoogleSignin.signIn()
+      const googleCredential = auth.GoogleAuthProvider.credential(idToken)
+      
+      const authUserCredential = await auth().signInWithCredential(googleCredential)
+      const userId = authUserCredential.user.uid
+      if (userId) {
+        const userDocData = await userDoc(userId).get()
+        if (!userDocData.exists) {
+          await userDoc(userId).set({
+            uid: userId,
+            created: new Date().getTime(),
+            auth_by: 'google',
+            firstName: user.givenName,
+            lastName: user.familyName,
+            avatar: user.photo
+          })
+        }
+        showLoadingIndicator(false)
+        navigation.navigate('Root')
+      } else {
+        showLoadingIndicator(false)  
+      }
+    } catch (err: any) {
+      showLoadingIndicator(false)
+    }
   }
 
   const onSignin = () => {
@@ -139,7 +172,7 @@ export default function SigninScreen() {
           </View>
           <VerMarginView size={20} />
           <View style={styles.socialButtonsContainer}>
-            <TouchableOpacity style={styles.googleButton}>
+            <TouchableOpacity onPress={onGoogleSign} style={styles.googleButton}>
               <Image 
                 source={require('../../../assets/images/google-logo.png')}
                 resizeMode='contain'
@@ -251,4 +284,4 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
   },
-});
+})

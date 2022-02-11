@@ -6,6 +6,7 @@
 #import <React/RCTLinkingManager.h>
 #import <React/RCTConvert.h>
 #import <Firebase.h>
+#import <RNGoogleSignin/RNGoogleSignin.h>
 
 #if RCT_DEV
 #import <React/RCTDevLoadingView.h>
@@ -75,7 +76,7 @@ static void InitializeFlipper(UIApplication *application) {
 
 // Linking API
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
-  return [super application:application openURL:url options:options] || [RCTLinkingManager application:application openURL:url options:options];
+  return [RNGoogleSignin application:application openURL:url options:options] || [RCTLinkingManager application:application openURL:url options:options] || [super application:application openURL:url options:options];
 }
 
 // Universal Links

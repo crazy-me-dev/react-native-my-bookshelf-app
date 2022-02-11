@@ -1,6 +1,6 @@
 import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { useMemo, useRef, useState } from 'react';
+import { Alert, Image, KeyboardAvoidingView, Platform, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import HorizontalDivider from '../../components/HorizontalDivider';
 import { Text, View } from '../../components/Themed';
@@ -13,6 +13,8 @@ import { isEmailValid } from '../../utils/strings';
 import { RootStackNavigationProps } from '../../navigation/RootNavigator';
 import { useAppUIContext } from '../../context/AppUIContext';
 import auth from '@react-native-firebase/auth'
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { userDoc } from '../../service/firebase/firebaseQueries';
 
 export default function SigninScreen() {
 
@@ -46,6 +48,37 @@ export default function SigninScreen() {
           style: "cancel"
         }])
       })
+  }
+
+  const onGoogleSign = async () => {
+
+    showLoadingIndicator(true)
+    try {
+      const { idToken, user } = await GoogleSignin.signIn()
+      const googleCredential = auth.GoogleAuthProvider.credential(idToken)
+      const authUserCredential = await auth().signInWithCredential(googleCredential)
+      const userId = authUserCredential.user.uid
+      if (userId) {
+        const userDocData = await userDoc(userId).get()
+        if (!userDocData.exists) {
+          await userDoc(userId).set({
+            uid: userId,
+            created: new Date().getTime(),
+            auth_by: 'google',
+            firstName: user.givenName,
+            lastName: user.familyName,
+            avatar: user.photo
+          })
+        }
+        showLoadingIndicator(false)
+        navigation.navigate('Root')
+      } else {
+        showLoadingIndicator(false)  
+      }
+    } catch (err: any) {
+      showLoadingIndicator(false)
+    }
+
   }
 
   return (
@@ -99,7 +132,7 @@ export default function SigninScreen() {
           </View>
           <VerMarginView size={30} />
           <View style={styles.socialButtonsContainer}>
-            <TouchableOpacity style={styles.googleButton}>
+            <TouchableOpacity onPress={onGoogleSign} style={styles.googleButton}>
               <Image 
                 source={require('../../../assets/images/google-logo.png')}
                 resizeMode='contain'

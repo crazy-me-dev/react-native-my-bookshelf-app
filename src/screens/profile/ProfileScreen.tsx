@@ -213,7 +213,7 @@ export default function ProfileScreen() {
       <ActionSheet
           ref={actionSheet}
           title={'Profile Photo?'}
-          message={'Select or take a photo to set as your inbyte profile picture'}
+          message={'Select or take a photo to set as your profile picture'}
           options={['Take a photo', 'Select a photo', 'cancel']}
           cancelButtonIndex={2}
           destructiveButtonIndex={1}

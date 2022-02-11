@@ -10,6 +10,12 @@ import AppContainer from './src/screens/AppContainer'
 import { Provider } from 'react-redux'
 import configureStore from './src/redux/store'
 
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+
+GoogleSignin.configure({
+  webClientId: '191087790563-to2qhbqrglqduvv4otok2gdahpnmumj5.apps.googleusercontent.com'
+})
+
 export default function App() {
   const isLoadingComplete = useCachedResources();
   
