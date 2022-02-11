@@ -47,6 +47,14 @@ yarn install
 ```
 
 ```sh
+cd ios && pod install
+```
+
+```sh
+cd ..
+```
+
+```sh
 yarn ios
 ```
 
