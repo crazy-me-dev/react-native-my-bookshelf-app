@@ -21,10 +21,12 @@ sellers list.
 
 - [React-Native](https://reactnative.dev/docs/)
 - [Expo](https://docs.expo.dev/)
-- [nytimes Api](https://developer.nytimes.com/get-started)
+- [Redux] (https://redux.js.org/)
+- [nytimes Api](https://developer.nytimes.com/get-started/)
 - [Firebase Auth](https://firebase.google.com/docs/auth)
-- [Firebase Firestore](https://firebase.google.com/docs/firestore)
-- [Firebase Storage](https://firebase.google.com/docs/storage)
+- [Firestore] (https://firebase.google.com/docs/firestore/)
+- [Firebase Storage] (https://firebase.google.com/docs/storage/)
+
 
 ## Install and run
 
